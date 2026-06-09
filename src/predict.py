@@ -17,6 +17,16 @@ class PricePredictor:
     def __init__(self, model_path='models/price_prediction_pipeline.pkl'):
         self.pipeline = joblib.load(model_path)
         self.model_path = model_path
+
+        if isinstance(self.pipeline, dict):
+            self.model = self.pipeline['model']
+            self.feature_engineer = self.pipeline['feature_engineer']
+        else:
+            self.model = self.pipeline
+            self.feature_engineer = None
+
+        if hasattr(self.model, 'n_jobs'):
+            self.model.n_jobs = 1
     
     def predict_single(self, product_dict):
         """
@@ -38,8 +48,10 @@ class PricePredictor:
         # Create single-row DataFrame
         df = pd.DataFrame([product_dict])
         
-        # Make prediction
-        prediction = self.pipeline.predict(df)[0]
+        if self.feature_engineer is not None:
+            df = self.feature_engineer.transform(df)
+
+        prediction = self.model.predict(df)[0]
         
         return max(0, prediction)  # Ensure non-negative price
     
@@ -53,7 +65,10 @@ class PricePredictor:
         Returns:
             Array of predictions
         """
-        predictions = self.pipeline.predict(df)
+        if self.feature_engineer is not None:
+            df = self.feature_engineer.transform(df)
+
+        predictions = self.model.predict(df)
         return np.maximum(predictions, 0)  # Ensure non-negative prices
     
     def predict_with_confidence(self, product_dict):
@@ -69,10 +84,14 @@ class PricePredictor:
         """
         df = pd.DataFrame([product_dict])
         
-        # Get predictions from individual trees
-        model = self.pipeline.named_steps['model']
-        tree_predictions = np.array([tree.predict(self.pipeline.named_steps['preprocessor'].transform(df))[0] 
-                                     for tree in model.estimators_])
+        if self.feature_engineer is not None:
+            df = self.feature_engineer.transform(df)
+            model = self.model
+        else:
+            model = self.pipeline.named_steps['model']
+            df = self.pipeline.named_steps['preprocessor'].transform(df)
+
+        tree_predictions = np.array([tree.predict(df)[0] for tree in model.estimators_])
         
         prediction = np.mean(tree_predictions)
         std_dev = np.std(tree_predictions)
@@ -130,7 +149,10 @@ if __name__ == '__main__':
         prediction = predictor.predict_single(product)
         print(f"{i}. {product['product_name']}")
         print(f"   Category: {product['category']}")
-        print(f"   Actual Price: ₹{product['actual_price']:,.2f}")
+        print(f"   Actual Price: Rs.{product['actual_price']:,.2f}")
         print(f"   Discount: {product['discount_percentage']:.1f}%")
-        print(f"   Predicted Price: ₹{prediction:,.2f}")
+        print(f"   Predicted Price: Rs.{prediction:,.2f}")
         print()
+
+
+

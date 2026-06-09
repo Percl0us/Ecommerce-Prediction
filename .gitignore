@@ -8,6 +8,7 @@ models/*.pkl
 models/*.joblib
 models/*.h5
 models/*.pth
+!models/price_prediction_pipeline.pkl
 
 # Python
 __pycache__/

@@ -40,14 +40,18 @@ st.markdown("""
 @st.cache_resource
 def load_model():
     """Load pre-trained model pipeline."""
-    model_path = Path(__file__).parent.parent / 'models' / 'price_prediction_pipeline.pkl'
-    
-    # For Hugging Face Spaces, model is in the same directory
-    if not model_path.exists():
-        model_path = Path('../models/price_prediction_pipeline.pkl')
-    
-    if not model_path.exists():
-        st.error(f"Error: Model not found at {model_path}")
+    app_dir = Path(__file__).resolve().parent
+    project_root = app_dir.parent
+    model_candidates = [
+        project_root / 'models' / 'price_prediction_pipeline.pkl',
+        Path.cwd() / 'models' / 'price_prediction_pipeline.pkl',
+        app_dir / 'models' / 'price_prediction_pipeline.pkl',
+    ]
+    model_path = next((path for path in model_candidates if path.exists()), None)
+
+    if model_path is None:
+        searched_paths = "\n".join(f"- {path}" for path in model_candidates)
+        st.error(f"Error: Model not found. Searched:\n{searched_paths}")
         st.stop()
     
     try:
@@ -57,8 +61,12 @@ def load_model():
         if isinstance(loaded_data, dict):
             pipeline = loaded_data['model']
             feature_engineer = loaded_data['feature_engineer']
+            if hasattr(pipeline, 'n_jobs'):
+                pipeline.n_jobs = 1
             return {'model': pipeline, 'feature_engineer': feature_engineer}
         else:
+            if hasattr(loaded_data, 'n_jobs'):
+                loaded_data.n_jobs = 1
             return loaded_data
     except Exception as e:
         st.error(f"Error loading model: {e}")
