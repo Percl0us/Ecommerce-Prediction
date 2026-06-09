@@ -1,8 +1,33 @@
-# E-Commerce Price Prediction 💰
+# E-Commerce Price Prediction
 
 An end-to-end machine learning project for predicting discounted prices of e-commerce products, built for the **Amazon ML Summer School** portfolio.
 
-## 📋 Table of Contents
+**GitHub**: https://github.com/Percl0us/Ecommerce-Prediction  
+**Live Demo**: https://ecommerce-prediction-percl0us.streamlit.app/
+
+---
+
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Percl0us/Ecommerce-Prediction.git
+cd Ecommerce-Prediction
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Generate data & train model
+python src/generate_data.py
+python src/train_model.py
+
+# 4. Run the web app
+cd deployment
+streamlit run app.py
+```
+
+**App opens at**: `http://localhost:8501`
+
+## Table of Contents
 
 1. [Project Overview](#project-overview)
 2. [Features & Architecture](#features--architecture)
@@ -50,7 +75,7 @@ This project demonstrates a **production-grade ML pipeline** for predicting the 
 | **Derived** | price_difference, rating_weight | 2 features |
 | **Total** | - | **213 features** |
 
-### 📊 ML Pipeline
+### ML Pipeline
 
 ```
 Raw Data
@@ -711,8 +736,8 @@ impact millions of customers.
 
 ### 🔗 Links to Share
 
-- GitHub: `https://github.com/yourusername/ecommerce-price-prediction`
-- Live Demo: `https://huggingface.co/spaces/yourusername/ecommerce-price-prediction`
+- GitHub: `https://github.com/Percl0us/Ecommerce-Prediction`
+- Live Demo: `https://ecommerce-prediction-percl0us.streamlit.app/`
 - Dataset: `data/amazon.csv` (included in repo)
 
 ---
